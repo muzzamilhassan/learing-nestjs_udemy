@@ -1,26 +1,56 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  DefaultValuePipe,
+  Query,
+  Post,
+  Body,
+  Patch,
+} from '@nestjs/common';
+import { CreateUserDto } from './dto/create.user.dto';
+import { GetUserParamsDto } from './dto/get.user.params.dto';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
-  constructor() {}
+  constructor(private readonly userService: UsersService) {}
+
+  // GET /users - list users with pagination
   @Get()
-  getUsers(@Param() params: any) {
-    console.log(params);
-    return [
-      { id: 1, name: 'John Doe' },
-      { id: 2, name: 'Jane Smith' },
-    ];
+  getUsers(
+    @Param() getUserParamsDto: GetUserParamsDto,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+  ) {
+    console.log('list users', { limit, page });
+    return this.userService.findAll();
   }
 
+  // GET /users/:id - get a single user by id
+  // if you use parseIntPipe so that params will be must requried
   @Get(':id')
-  getUserById(@Param('id') id: string) {
-    console.log(id);
-    return { id: 1, name: 'John Doe' };
+  getUserById(@Param() getUserParamsDto: GetUserParamsDto) {
+    console.log('get user', { getUserParamsDto });
+    return `ID is ${getUserParamsDto.id} and ${JSON.stringify(getUserParamsDto)}`;
   }
 
-  @Post()
-  createUser(@Body() body: { name: string }) {
-    console.log(body);
-    return { message: 'User created successfully' };
+  // @Post('/create')
+  // createUser(@Body(new ValidationPipe()) createUserDto: CreateUserDto) {
+  //   console.log(createUserDto);
+  //   return 'This action adds a new user';
+  // }
+
+  @Post('/create')
+  createUser(@Body() createUserDto: CreateUserDto) {
+    console.log(createUserDto);
+    return 'This action adds a new user';
+  }
+
+  @Patch('/updateUser')
+  updateUser(@Body() updateUserDto: CreateUserDto) {
+    console.log(updateUserDto);
+    return 'This action updates a user';
   }
 }
