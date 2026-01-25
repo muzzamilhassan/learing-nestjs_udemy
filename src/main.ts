@@ -16,6 +16,9 @@ async function bootstrap() {
     .setTitle('Cats example')
     .setDescription('The cats API description')
     .setVersion('1.0')
+    .setTermsOfService('http://example.com/terms/')
+    .setLicense('MIT', 'https://opensource.org/licenses/MIT')
+    .addServer('http://localhost:3000')
     .addTag('cats')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);

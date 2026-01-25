@@ -12,6 +12,7 @@ import {
 import { CreateUserDto } from './dto/create.user.dto';
 import { GetUserParamsDto } from './dto/get.user.params.dto';
 import { UsersService } from './users.service';
+import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 @Controller('users')
 export class UsersController {
@@ -19,6 +20,25 @@ export class UsersController {
 
   // GET /users - list users with pagination
   @Get()
+  @ApiOperation({ summary: 'List all users with pagination' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Number of users to return',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number',
+    example: 1,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'A list of users',
+  })
   getUsers(
     @Param() getUserParamsDto: GetUserParamsDto,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
