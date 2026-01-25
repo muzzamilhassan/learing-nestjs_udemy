@@ -1,3 +1,5 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
 enum postStatus {
   DRAFT = 'draft',
   SCHEDULED = 'scheduled',
@@ -5,6 +7,8 @@ enum postStatus {
   PUBLISHED = 'published',
 }
 export class CreatePostDto {
+  @ApiProperty({ example: 'Understanding TypeScript with NestJS' }) // this is use for swagger documentation
+  @ApiPropertyOptional({ example: 'Understanding TypeScript with NestJS' }) // this is use for swagger documentation optional field
   title: string;
   postType: string;
   slug: string;
