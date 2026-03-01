@@ -3,74 +3,97 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  DefaultValuePipe,
-  Query,
   Post,
   Body,
   Patch,
+  Delete,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create.user.dto';
-import { GetUserParamsDto } from './dto/get.user.params.dto';
+import { UpdateUserDto } from './dto/update.user.dto';
 import { UsersService } from './users.service';
-import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 
 @Controller('users')
+@ApiTags('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
-  // GET /users - list users with pagination
+  // GET /users - list all users
   @Get()
-  @ApiOperation({ summary: 'List all users with pagination' })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-    description: 'Number of users to return',
-    example: 10,
-  })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    type: Number,
-    description: 'Page number',
-    example: 1,
-  })
+  @ApiOperation({ summary: 'List all users with their posts' })
   @ApiResponse({
     status: 200,
-    description: 'A list of users',
+    description: 'A list of users with their posts',
   })
-  getUsers(
-    @Param() getUserParamsDto: GetUserParamsDto,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-  ) {
-    console.log('list users', { limit, page });
+  getUsers() {
     return this.userService.findAll();
   }
 
   // GET /users/:id - get a single user by id
-  // if you use parseIntPipe so that params will be must requried
   @Get(':id')
-  getUserById(@Param() getUserParamsDto: GetUserParamsDto) {
-    console.log('get user', { getUserParamsDto });
-    return `ID is ${getUserParamsDto.id} and ${JSON.stringify(getUserParamsDto)}`;
+  @ApiOperation({ summary: 'Get a single user by ID' })
+  @ApiParam({ name: 'id', type: 'number', example: 1 })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns the user with the specified ID',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  getUserById(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.findOne(id);
   }
 
-  // @Post('/create')
-  // createUser(@Body(new ValidationPipe()) createUserDto: CreateUserDto) {
-  //   console.log(createUserDto);
-  //   return 'This action adds a new user';
-  // }
+  // GET /users/:id/posts - get a user with all their posts
+  @Get(':id/posts')
+  @ApiOperation({ summary: 'Get a user with all their posts' })
+  @ApiParam({ name: 'id', type: 'number', example: 1 })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns the user with all their posts',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  getUserWithPosts(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.getUserWithPosts(id);
+  }
 
-  @Post('/create')
+  // POST /users - create a new user
+  @Post()
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiResponse({
+    status: 201,
+    description: 'The user has been successfully created.',
+  })
+  @ApiResponse({ status: 409, description: 'Email already exists' })
   createUser(@Body() createUserDto: CreateUserDto) {
-    console.log(createUserDto);
-    return 'This action adds a new user';
+    return this.userService.create(createUserDto);
   }
 
-  @Patch('/updateUser')
-  updateUser(@Body() updateUserDto: CreateUserDto) {
-    console.log(updateUserDto);
-    return 'This action updates a user';
+  // PATCH /users/:id - update a user
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a user' })
+  @ApiParam({ name: 'id', type: 'number', example: 1 })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully updated.',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 409, description: 'Email already exists' })
+  updateUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.userService.update(id, updateUserDto);
+  }
+
+  // DELETE /users/:id - delete a user
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a user' })
+  @ApiParam({ name: 'id', type: 'number', example: 1 })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully deleted.',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  deleteUser(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.remove(id);
   }
 }
